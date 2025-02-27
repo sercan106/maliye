@@ -1,0 +1,205 @@
+{% extends "finans/ana.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h2 class="mb-0 fs-4 fw-bold">Düzenli Ödeme Ekle</h2>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="POST" action="{% url 'finans:duzenli_ödeme_ekle' %}" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Kullanıcı -->
+                        <div class="mb-4">
+                            <label for="{{ form.kullanıcı.id_for_label }}" class="form-label fw-semibold text-dark">Kullanıcı</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-user text-primary"></i></span>
+                                {{ form.kullanıcı }}
+                            </div>
+                            <div class="invalid-feedback">Lütfen bir kullanıcı seçin.</div>
+                        </div>
+
+                        <!-- Üst Kategori -->
+                        <div class="mb-4">
+                            <label for="{{ form.üst_kategori.id_for_label }}" class="form-label fw-semibold text-dark">Üst Kategori (İsteğe Bağlı)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-folder text-primary"></i></span>
+                                {{ form.üst_kategori }}
+                            </div>
+                            <small class="form-text text-muted">Bir üst kategori seçerek alt kategorileri listeleyebilirsiniz.</small>
+                            <div class="invalid-feedback">Lütfen bir üst kategori seçin.</div>
+                        </div>
+
+                        <!-- Alt Kategori -->
+                        <div class="mb-4">
+                            <label for="{{ form.kategori.id_for_label }}" class="form-label fw-semibold text-dark">Kategori (İsteğe Bağlı)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-folder-open text-primary"></i></span>
+                                {{ form.kategori }}
+                            </div>
+                            <small class="form-text text-muted">Üst kategori seçilirse otomatik olarak doldurulur. Boş bırakılırsa üst kategori kullanılır.</small>
+                            <div class="invalid-feedback">Lütfen bir kategori seçin.</div>
+                        </div>
+
+                        <!-- Açıklama -->
+                        <div class="mb-4">
+                            <label for="{{ form.açıklama.id_for_label }}" class="form-label fw-semibold text-dark">Açıklama</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-comment text-primary"></i></span>
+                                {{ form.açıklama }}
+                            </div>
+                            <div class="invalid-feedback">Lütfen bir açıklama girin.</div>
+                        </div>
+
+                        <!-- Miktar -->
+                        <div class="mb-4">
+                            <label for="{{ form.miktar.id_for_label }}" class="form-label fw-semibold text-dark">Miktar</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-lira-sign text-primary"></i></span>
+                                {{ form.miktar }}
+                            </div>
+                            <div class="invalid-feedback">Lütfen geçerli bir miktar girin.</div>
+                        </div>
+
+                        <!-- Para Birimi -->
+                        <div class="mb-4">
+                            <label for="{{ form.para_birimi.id_for_label }}" class="form-label fw-semibold text-dark">Para Birimi</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-coins text-primary"></i></span>
+                                {{ form.para_birimi }}
+                            </div>
+                            <div class="invalid-feedback">Lütfen bir para birimi seçin.</div>
+                        </div>
+
+                        <!-- Ödeme Günü -->
+                        <div class="mb-4">
+                            <label for="{{ form.ödeme_günü.id_for_label }}" class="form-label fw-semibold text-dark">Ödeme Günü</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-calendar-day text-primary"></i></span>
+                                {{ form.ödeme_günü }}
+                            </div>
+                            <div class="invalid-feedback">Lütfen geçerli bir gün girin (1-31).</div>
+                        </div>
+
+                        <!-- Gönder Butonu -->
+                        <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+                            <button type="submit" class="btn btn-primary py-2 px-4 fw-semibold">
+                                <i class="fas fa-plus-circle me-2"></i>Düzenli Ödeme Ekle
+                            </button>
+                            <a href="{% url 'finans:anasayfa' %}" class="btn btn-outline-secondary py-2 px-4 fw-semibold">
+                                <i class="fas fa-times me-2"></i>İptal
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gerekli Kütüphaneler -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+<!-- JavaScript -->
+<script>
+    $(document).ready(function() {
+        $('#id_üst_kategori').change(function() {
+            var ustKategoriId = $(this).val();
+            $.ajax({
+                url: "{% url 'finans:get_alt_kategoriler' %}",
+                data: {
+                    'ust_kategori_id': ustKategoriId,
+                    'kategori_tipi': 'gider'
+                },
+                success: function(data) {
+                    var altKategoriSelect = $('#id_kategori');
+                    altKategoriSelect.empty();
+                    altKategoriSelect.append('<option value="">---------</option>');
+                    $.each(data.alt_kategoriler, function(index, kategori) {
+                        altKategoriSelect.append('<option value="' + kategori.id + '">' + kategori.isim + '</option>');
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.log("Hata: " + error);
+                }
+            });
+        });
+
+        // Bootstrap form doğrulama
+        (function () {
+            'use strict';
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+    });
+</script>
+
+<!-- Özel Stil -->
+<style>
+    .card {
+        background: #fff;
+        transition: transform 0.2s ease-in-out;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    .form-label {
+        color: #343a40;
+        font-size: 1.1rem;
+    }
+    .input-group-text {
+        background-color: #f1f3f5;
+        border-right: 0;
+    }
+    .form-control, .form-select {
+        border-left: 0;
+        box-shadow: none;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border: none;
+        transition: background 0.3s;
+    }
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #0056b3, #003d80);
+    }
+    .btn-outline-secondary {
+        border-color: #6c757d;
+        color: #6c757d;
+        transition: all 0.3s;
+    }
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: #fff;
+    }
+    .form-text {
+        font-size: 0.9rem;
+    }
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 1.5rem;
+        }
+        .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        .d-flex {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+</style>
+{% endblock content %}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genel ve Aylık Bakiye</title>
+    <script>
+        function yenileKurlar() {
+            fetch(window.location.href)  // Sayfayı tekrar yükleyerek kurları günceller
+                .then(response => response.text())
+                .then(html => {
+                    document.documentElement.innerHTML = html;
+                })
+                .catch(error => console.error("Kurlar güncellenirken hata oluştu:", error));
+        }
+        setInterval(yenileKurlar, 60000);  // 60 saniyede bir otomatik güncelle
+    </script>
+</head>
+<body>
+
+<h2>Genel ve Aylık Bakiyeler</h2>
+
+<h3>Tüm Zamanların Bakiyeleri</h3>
+<p>TL Bakiyesi: {{ genel_bakiyeler.TL }} TL</p>
+<p>USD Bakiyesi: {{ genel_bakiyeler.USD }} USD</p>
+<p>Altın Bakiyesi: {{ genel_bakiyeler.GOLD }} Gram</p>
+<p>Ruble Bakiyesi: {{ genel_bakiyeler.RUB }} RUB</p>
+
+<h3>{{ ay }} {{ yil }} Ayı Bakiyeleri</h3>
+<p>TL Bakiyesi: {{ aylik_bakiyeler.TL }} TL</p>
+<p>USD Bakiyesi: {{ aylik_bakiyeler.USD }} USD</p>
+<p>Altın Bakiyesi: {{ aylik_bakiyeler.GOLD }} Gram</p>
+<p>Ruble Bakiyesi: {{ aylik_bakiyeler.RUB }} RUB</p>
+
+<h2>Döviz Kurları</h2>
+<p><b>1 Dolar:</b> <span id="dolar_kur">{{ kurlar.USD }}</span> TL</p>
+<p><b>1 Ruble:</b> <span id="ruble_kur">{{ kurlar.RUB }}</span> TL</p>
+<p><b>1 Gram Altın:</b> <span id="altin_kur">{{ kurlar.GOLD }}</span> TL</p>
+
+<h2>TL Cinsinden Genel Değerler</h2>
+<p><b>Toplam Gelir:</b> {{ toplam_gelir_tl }} TL</p>
+<p><b>Toplam Gider:</b> {{ toplam_gider_tl }} TL</p>
+<p><b>Toplam Bakiye:</b> {{ toplam_bakiye_tl }} TL</p>
+
+<button onclick="yenileKurlar()">Kurları Güncelle</button>
+
+</body>
+</html>

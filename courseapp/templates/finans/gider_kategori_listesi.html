@@ -1,0 +1,129 @@
+{% extends "finans/ana.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-gradient-danger text-white text-center py-4 rounded-top-4">
+                    <h2 class="mb-0 fs-3 fw-bold">Gider Kategorileri</h2>
+                    <p class="mt-2 fs-6 opacity-75">Gider kategorilerinizi hiyerarşik olarak görüntüleyin ve ekleyin</p>
+                </div>
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Kategori Ekleme Formu -->
+                    <div class="mb-4">
+                        <h5 class="fw-semibold text-muted mb-3">Yeni Kategori Ekle</h5>
+                        <form method="POST" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label for="id_isim" class="form-label fw-semibold text-muted">Kategori Adı</label>
+                                    {{ form.isim }}
+                                    {% if form.isim.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.isim.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="id_üst_kategori" class="form-label fw-semibold text-muted">Mevcut Üst Kategori</label>
+                                    {{ form.üst_kategori }}
+                                    {% if form.üst_kategori.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.üst_kategori.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="id_üst_kategori_adı" class="form-label fw-semibold text-muted">Yeni Üst Kategori</label>
+                                    {{ form.üst_kategori_adı }}
+                                    {% if form.üst_kategori_adı.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.üst_kategori_adı.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-danger w-100 py-2 fw-semibold">Ekle</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Kategori Listesi -->
+                    {% if kategori_hiyerarsi %}
+                        <div class="accordion" id="giderKategoriAccordion">
+                            {% for ust_kategori, alt_kategoriler in kategori_hiyerarsi.items %}
+                                <div class="accordion-item border-0 mb-2 rounded-3 shadow-sm">
+                                    <h2 class="accordion-header" id="heading_{{ ust_kategori.id }}">
+                                        <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ ust_kategori.id }}" aria-expanded="false" aria-controls="collapse_{{ ust_kategori.id }}">
+                                            {{ ust_kategori.isim }}
+                                            <span class="badge bg-danger ms-2">{{ alt_kategoriler.count }}</span>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse_{{ ust_kategori.id }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ ust_kategori.id }}" data-bs-parent="#giderKategoriAccordion">
+                                        <div class="accordion-body">
+                                            {% if alt_kategoriler %}
+                                                <ul class="list-group list-group-flush">
+                                                    {% for alt_kategori in alt_kategoriler %}
+                                                        <li class="list-group-item border-0 py-2">{{ alt_kategori.isim }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                <p class="text-muted mb-0">Bu kategorinin alt kategorisi yok.</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning text-center">
+                            Henüz gider kategorisi eklenmemiş.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-danger { background: linear-gradient(135deg, #dc3545, #b02a37); }
+    .card { transition: transform 0.2s ease-in-out; }
+    .card:hover { transform: translateY(-5px); }
+    .accordion-button { background-color: #f8f9fa; color: #333; border-radius: 8px !important; }
+    .accordion-button:not(.collapsed) { background-color: #dc3545; color: white; }
+    .accordion-item { background-color: #fff; }
+    .form-control, .form-select { border-radius: 8px; padding: 10px; font-size: 1rem; }
+    .btn-danger { border-radius: 8px; font-size: 1.1rem; }
+    @media (max-width: 576px) {
+        .card-header h2 { font-size: 1.5rem; }
+        .card-body { padding: 1.5rem; }
+        .accordion-button, .list-group-item { font-size: 0.9rem; }
+        .btn-danger { font-size: 1rem; }
+    }
+</style>
+
+<script>
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            var forms = document.getElementsByClassName('needs-validation');
+            Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+{% endblock %}

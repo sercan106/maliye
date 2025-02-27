@@ -1,0 +1,76 @@
+<!-- templates/finans/kredi_karti_ekle.html -->
+{% extends "finans/ana.html" %}
+{% load static %}
+{% block content %}
+<div class="container my-4">
+    <h2 class="text-center mb-4">Kredi Kartı Ekle</h2>
+    <form method="POST" action="{% url 'finans:kredi_karti_ekle' %}" class="needs-validation" novalidate>
+        {% csrf_token %}
+        
+        <!-- Kullanıcı -->
+        <div class="mb-3">
+            <label for="{{ form.kullanıcı.id_for_label }}" class="form-label">Kullanıcı</label>
+            {{ form.kullanıcı }}
+            <div class="invalid-feedback">Lütfen bir kullanıcı seçin.</div>
+        </div>
+
+        <!-- İsim -->
+        <div class="mb-3">
+            <label for="{{ form.isim.id_for_label }}" class="form-label">Kredi Kartı İsmi</label>
+            {{ form.isim }}
+            <div class="invalid-feedback">Lütfen bir isim girin.</div>
+        </div>
+
+        <!-- Toplam Borç -->
+        <div class="mb-3">
+            <label for="{{ form.toplam_borc.id_for_label }}" class="form-label">Toplam Borç</label>
+            {{ form.toplam_borc }}
+            <div class="invalid-feedback">Lütfen geçerli bir borç miktarı girin.</div>
+        </div>
+
+        <!-- Limit -->
+        <div class="mb-3">
+            <label for="{{ form.limit.id_for_label }}" class="form-label">Limit</label>
+            {{ form.limit }}
+            <div class="invalid-feedback">Lütfen geçerli bir limit girin.</div>
+        </div>
+
+        <!-- Son Ödeme Günü -->
+        <div class="mb-3">
+            <label for="{{ form.son_ödeme_günü.id_for_label }}" class="form-label">Son Ödeme Günü</label>
+            {{ form.son_ödeme_günü }}
+            <div class="invalid-feedback">Lütfen geçerli bir gün girin (1-31).</div>
+        </div>
+
+        <!-- Asgari Ödeme Yüzdesi -->
+        <div class="mb-3">
+            <label for="{{ form.asgari_ödeme_yüzdesi.id_for_label }}" class="form-label">Asgari Ödeme Yüzdesi</label>
+            {{ form.asgari_ödeme_yüzdesi }}
+            <div class="invalid-feedback">Lütfen geçerli bir yüzde girin.</div>
+        </div>
+
+        <!-- Gönder Butonu -->
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">Kredi Kartı Ekle</button>
+            <a href="{% url 'finans:anasayfa' %}" class="btn btn-secondary">İptal</a>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })();
+</script>
+{% endblock content %}

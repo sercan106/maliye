@@ -1,0 +1,207 @@
+{% extends "finans/ana.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-gradient-dark text-white text-center py-4 rounded-top-4">
+                    <h2 class="mb-0 fs-3 fw-bold animate__animated animate__fadeIn">Finansal Analiz</h2>
+                    <p class="mt-2 fs-6 opacity-75 animate__animated animate__fadeIn animate__delay-1s">Kullanıcı, ay ve kategori bazlı detaylı raporlar (TL cinsinden)</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <!-- Filtreleme Alanı -->
+                    <div class="row g-3 mb-5">
+                        <div class="col-12 col-md-4">
+                            <label for="kullaniciFiltresi" class="form-label fw-semibold text-muted">Kullanıcı Seç</label>
+                            <select id="kullaniciFiltresi" class="form-select" onchange="filtreleGrafikleri()">
+                                <option value="all">Tüm Kullanıcılar</option>
+                                {% for kullanici in kullanici_listesi %}
+                                    <option value="{{ kullanici }}">{{ kullanici }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="ayFiltresi" class="form-label fw-semibold text-muted">Ay Seç</label>
+                            <select id="ayFiltresi" class="form-select" onchange="filtreleGrafikleri()">
+                                {% for ay, ay_adı in ay_listesi %}
+                                    <option value="{{ ay }}" {% if ay == mevcut_ay_adı %}selected{% endif %}>{{ ay_adı }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="kategoriFiltresi" class="form-label fw-semibold text-muted">Kategori Seç</label>
+                            <select id="kategoriFiltresi" class="form-select" onchange="filtreleGrafikleri()">
+                                <option value="all">Tüm Kategoriler</option>
+                                {% for kategori, id in kategori_listesi.items %}
+                                    <option value="{{ kategori }}">{{ kategori }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="gelirGiderFiltresi" class="form-label fw-semibold text-muted">Gelir/Gider</label>
+                            <select id="gelirGiderFiltresi" class="form-select" onchange="filtreleGrafikleri()">
+                                <option value="both">Hem Gelir Hem Gider</option>
+                                <option value="gelir">Sadece Gelir</option>
+                                <option value="gider">Sadece Gider</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Grafikler -->
+                    <section>
+                        <h4 class="fw-semibold text-muted mb-4">Kullanıcı Bazlı Gelir ve Giderler (TL)</h4>
+                        <div class="row">
+                            <div class="col-12 mb-4">
+                                <div class="chart-container"><canvas id="kullaniciChart" height="200"></canvas></div>
+                            </div>
+                        </div>
+
+                        <h4 class="fw-semibold text-muted mb-4">Kategori Bazlı Gelir ve Giderler (TL)</h4>
+                        <div class="row">
+                            <div class="col-12 mb-4">
+                                <div class="chart-container"><canvas id="kategoriChart" height="300"></canvas></div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-dark { background: linear-gradient(135deg, #343a40, #212529); }
+    .card { transition: transform 0.3s ease; }
+    .card:hover { transform: translateY(-5px); }
+    .chart-container {
+        position: relative;
+        width: 100%;
+        overflow-x: auto;
+        padding: 10px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    canvas { max-width: 100%; min-width: 300px; }
+    .form-select {
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 1rem;
+    }
+    @media (max-width: 768px) {
+        .card-header h2 { font-size: 1.75rem; }
+        .card-body { padding: 2rem; }
+        canvas { height: 200px !important; }
+        h4 { font-size: 1.25rem; }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script>
+    const colors = ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6f42c1', '#e83e8c', '#fd7e14', '#20c997', '#6610f2'];
+    const tumVeriler = {{ tum_veriler|safe }};
+
+    let kullaniciChart, kategoriChart;
+
+    function filtreleGrafikleri() {
+        const kullaniciSecim = document.getElementById('kullaniciFiltresi').value;
+        const aySecim = document.getElementById('ayFiltresi').value;
+        const kategoriSecim = document.getElementById('kategoriFiltresi').value;
+        const gelirGiderSecim = document.getElementById('gelirGiderFiltresi').value;
+
+        // Kullanıcı filtresi
+        let filtrelenmisKullanicilar = kullaniciSecim === 'all' ? Object.keys(tumVeriler) : [kullaniciSecim];
+
+        // Kullanıcı Grafiği
+        const kullaniciLabels = filtrelenmisKullanicilar;
+        const gelirData = kullaniciLabels.map(k => tumVeriler[k][aySecim]['toplam_gelir']);
+        const giderData = kullaniciLabels.map(k => tumVeriler[k][aySecim]['toplam_gider']);
+        const datasetsKullanici = [];
+        if (gelirGiderSecim === 'both' || gelirGiderSecim === 'gelir') {
+            datasetsKullanici.push({ label: 'Gelir (TL)', data: gelirData, backgroundColor: colors[1] });
+        }
+        if (gelirGiderSecim === 'both' || gelirGiderSecim === 'gider') {
+            datasetsKullanici.push({ label: 'Gider (TL)', data: giderData, backgroundColor: colors[2] });
+        }
+
+        if (kullaniciChart) kullaniciChart.destroy();
+        kullaniciChart = new Chart(document.getElementById('kullaniciChart'), {
+            type: 'bar',
+            data: { labels: kullaniciLabels, datasets: datasetsKullanici },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true }, x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 } } }
+            }
+        });
+
+        // Kategori Grafiği
+        let kategoriLabels = [];
+        let kategoriGelirData = [];
+        let kategoriGiderData = [];
+
+        filtrelenmisKullanicilar.forEach(kullanici => {
+            const veriler = tumVeriler[kullanici][aySecim];
+            if (kategoriSecim === 'all') {
+                // Tüm gelir kategorileri
+                for (let kat in veriler.gelir) {
+                    if (!kategoriLabels.includes(kat) && veriler.gelir[kat] > 0) {
+                        kategoriLabels.push(kat);
+                    }
+                }
+                // Tüm gider kategorileri
+                for (let kat in veriler.gider) {
+                    if (!kategoriLabels.includes(kat) && veriler.gider[kat] > 0) {
+                        kategoriLabels.push(kat);
+                    }
+                }
+            } else {
+                // Seçilen kategori için kontrol (Gelir veya Gider ayrımıyla)
+                const katAdı = kategoriSecim.split(' (')[0];
+                const tur = kategoriSecim.includes('(Gelir)') ? 'gelir' : 'gider';
+                let toplam = 0;
+                filtrelenmisKullanicilar.forEach(k => {
+                    toplam += veriler[tur][katAdı] || 0;
+                });
+                if (toplam > 0 && !kategoriLabels.includes(katAdı)) {
+                    kategoriLabels.push(katAdı);
+                }
+            }
+        });
+
+        kategoriLabels.forEach(kat => {
+            let gelirToplam = 0;
+            let giderToplam = 0;
+            filtrelenmisKullanicilar.forEach(k => {
+                gelirToplam += tumVeriler[k][aySecim].gelir[kat] || 0;
+                giderToplam += tumVeriler[k][aySecim].gider[kat] || 0;
+            });
+            kategoriGelirData.push(gelirToplam);
+            kategoriGiderData.push(giderToplam);
+        });
+
+        const datasetsKategori = [];
+        if (gelirGiderSecim === 'both' || gelirGiderSecim === 'gelir') {
+            datasetsKategori.push({ label: 'Kategori Gelir (TL)', data: kategoriGelirData, backgroundColor: colors[1] });
+        }
+        if (gelirGiderSecim === 'both' || gelirGiderSecim === 'gider') {
+            datasetsKategori.push({ label: 'Kategori Gider (TL)', data: kategoriGiderData, backgroundColor: colors[2] });
+        }
+
+        if (kategoriChart) kategoriChart.destroy();
+        kategoriChart = new Chart(document.getElementById('kategoriChart'), {
+            type: 'bar',
+            data: { labels: kategoriLabels, datasets: datasetsKategori },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true }, x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 } } }
+            }
+        });
+    }
+
+    window.onload = filtreleGrafikleri;
+</script>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends "finans/ana.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="container my-4">
+        <h1 class="text-center mb-4" style="color: #007bff;">{{ kart.isim }} Ekstreleri</h1>
+        
+        <div class="table-container">
+            {% if ekstreler %}
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Son Ödeme Tarihi</th>
+                            <th>Kullanıcı</th>
+                            <th>Asgari Tutar</th>
+                            <th>Toplam Borç</th>
+                            <th>Kart Limiti</th>
+                            <th>Ödenme Durumu</th>
+                            <th>Ay</th>
+                            <th>Yıl</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ekstre in ekstreler %}
+                        <tr>
+                            <td>{{ ekstre.son_ödeme_tarihi|date:"d.m.Y" }}</td>
+                            <td>{{ ekstre.kredi_karti.kullanıcı.username }} ({{ ekstre.kredi_karti.kullanıcı.first_name }} {{ ekstre.kredi_karti.kullanıcı.last_name }})</td>
+                            <td>{{ ekstre.asgari_tutar|floatformat:2 }} TL</td>
+                            <td>{{ ekstre.kredi_karti.toplam_borc|floatformat:2 }} TL</td>
+                            <td>{{ ekstre.kredi_karti.limit|floatformat:2 }} TL</td>
+                            <td>
+                                <span class="badge {% if ekstre.ödendi_mi %}badge-odendi{% else %}badge-odenmedi{% endif %}">
+                                    {% if ekstre.ödendi_mi %}Ödendi{% else %}Ödenmedi{% endif %}
+                                </span>
+                            </td>
+                            <td>{{ ekstre.ay }}</td>
+                            <td>{{ ekstre.yıl }}</td>
+                            <td>
+                                <a href="#" class="btn btn-detail btn-sm" data-bs-toggle="modal" data-bs-target="#detayModal{{ ekstre.id }}">
+                                    {% if ekstre.ödendi_mi %}Detay{% else %}Detay ve Ödeme{% endif %}
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!-- Detay ve Ödeme Modal -->
+                        <div class="modal fade" id="detayModal{{ ekstre.id }}" tabindex="-1" aria-labelledby="detayModalLabel{{ ekstre.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="detayModalLabel{{ ekstre.id }}">{{ kart.isim }} - Ekstre Detayı</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>Kullanıcı:</strong> {{ ekstre.kredi_karti.kullanıcı.username }} ({{ ekstre.kredi_karti.kullanıcı.first_name }} {{ ekstre.kredi_karti.kullanıcı.last_name }})</p>
+                                        <p><strong>Son Ödeme Tarihi:</strong> {{ ekstre.son_ödeme_tarihi|date:"d.m.Y" }}</p>
+                                        <p><strong>Asgari Tutar:</strong> {{ ekstre.asgari_tutar|floatformat:2 }} TL</p>
+                                        <p><strong>Toplam Borç:</strong> {{ ekstre.kredi_karti.toplam_borc|floatformat:2 }} TL</p>
+                                        <p><strong>Kart Limiti:</strong> {{ ekstre.kredi_karti.limit|floatformat:2 }} TL</p>
+                                        <p><strong>Ödenme Durumu:</strong> {% if ekstre.ödendi_mi %}Ödendi{% else %}Ödenmedi{% endif %}</p>
+                                        <p><strong>Ay/Yıl:</strong> {{ ekstre.ay }}/{{ ekstre.yıl }}</p>
+                                        {% if not ekstre.ödendi_mi %}
+                                        <form method="POST" action="{% url 'finans:odeme_yap' ekstre.id %}">
+                                            {% csrf_token %}
+                                            <div class="mb-3">
+                                                <label for="miktar{{ ekstre.id }}" class="form-label">Ödeme Tutarı</label>
+                                                <input type="number" step="0.01" name="miktar" id="miktar{{ ekstre.id }}" class="form-control" placeholder="Tutar" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="faiz{{ ekstre.id }}" class="form-label">Faiz Tutarı</label>
+                                                <input type="number" step="0.01" name="faiz" id="faiz{{ ekstre.id }}" class="form-control" placeholder="Faiz" value="0">
+                                            </div>
+                                            <button type="submit" class="btn btn-success">Ödeme Yap</button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center">
+                Bu karta ait ekstre bulunmamaktadır.
+            </div>
+            {% endif %}
+            
+            <!-- Geri Dön Butonları -->
+            <div class="d-grid gap-2 mt-4">
+                <a href="{% url 'finans:kredi_karti_listesi' %}" class="btn btn-primary">Kart Listesine Dön</a>
+                <a href="{% url 'finans:anasayfa' %}" class="btn btn-secondary">Ana Sayfaya Dön</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .table-container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .table thead th {
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            border: none;
+        }
+        .table tbody tr:hover {
+            background-color: #f1f3f5;
+            transition: background-color 0.3s ease;
+        }
+        .table td, .table th {
+            vertical-align: middle;
+        }
+        .badge-odendi {
+            background-color: #28a745;
+        }
+        .badge-odenmedi {
+            background-color: #dc3545;
+        }
+        .btn-detail {
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+        }
+        @media (max-width: 768px) {
+            .table-container {
+                padding: 10px;
+            }
+            .table {
+                font-size: 14px;
+            }
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+{% endblock content %}
